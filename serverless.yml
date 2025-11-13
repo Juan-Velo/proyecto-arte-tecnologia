@@ -1,0 +1,35 @@
+org: juanvelo
+service: proyecto-arte-tecnologia
+
+provider:
+  name: aws
+  runtime: python3.13
+  memorySize: 1024
+  timeout: 20
+  iam:
+    role: arn:aws:iam::902206004539:role/LabRole
+  stage: prod
+  region: us-east-1
+  environment:
+    FLASK_ENV: production
+
+functions:
+  app:
+    handler: wsgi_handler.handler
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: '{proxy+}'
+          method: ANY
+          cors: true
+
+plugins:
+  - serverless-wsgi
+
+custom:
+  wsgi:
+    app: app.app
+    packRequirements: true
