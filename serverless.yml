@@ -32,4 +32,11 @@ plugins:
 custom:
   wsgi:
     app: app.app
-    packRequirements: true
+    packRequirements: false
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!.git/**'
+    - '!.serverless/**'
+    - '!__pycache__/**'
