@@ -1,8 +1,12 @@
 .git
+.gitignore
 .serverless
 .venv
 __pycache__/
 node_modules/
 Dockerfile
+.dockerignore
 README.md
+serverless.yml
 *.pyc
+*.md

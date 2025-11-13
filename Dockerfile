@@ -1,15 +1,13 @@
 FROM public.ecr.aws/lambda/python:3.12
 
-ARG LAMBDA_TASK_ROOT=/var/task
-ENV LAMBDA_TASK_ROOT=${LAMBDA_TASK_ROOT}
-ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
-WORKDIR ${LAMBDA_TASK_ROOT}
+# Copy requirements and install dependencies
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt
 
-# Install Python dependencies into the Lambda task root
-COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy full application source (filtered by .dockerignore)
-COPY . .
+# Copy application code explicitly
+COPY app.py ${LAMBDA_TASK_ROOT}/
+COPY wsgi_handler.py ${LAMBDA_TASK_ROOT}/
+COPY templates/ ${LAMBDA_TASK_ROOT}/templates/
+COPY static/ ${LAMBDA_TASK_ROOT}/static/
 
 CMD ["wsgi_handler.handler"]
