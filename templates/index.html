@@ -194,7 +194,11 @@
             btnAnalizar.disabled = true;
 
             try {
-                const response = await fetch('/analyze', {
+                // Construir URL correcta (funciona local y en Lambda)
+                const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+                const analyzeUrl = baseUrl + '/analyze';
+                
+                const response = await fetch(analyzeUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -212,7 +216,8 @@
                     sessionStorage.setItem('energyResult', JSON.stringify(data));
                     
                     // Redirigir a la página de resultados
-                    window.location.href = '/resultado';
+                    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+                    window.location.href = baseUrl + '/resultado';
                 } else {
                     alert('Error al procesar: ' + (data.error || 'Error desconocido'));
                     btnAnalizar.innerHTML = '<i class="fas fa-bolt"></i> Analizar Mi Energía';

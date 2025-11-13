@@ -97,7 +97,8 @@
             
             if (!resultData) {
                 alert('No hay datos de análisis. Redirigiendo al inicio...');
-                window.location.href = '/';
+                const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+                window.location.href = baseUrl + '/';
                 return;
             }
 
@@ -111,7 +112,8 @@
             } catch (error) {
                 console.error('Error al cargar resultados:', error);
                 alert('Error al cargar los resultados. Redirigiendo al inicio...');
-                window.location.href = '/';
+                const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+                window.location.href = baseUrl + '/';
             }
         });
 
