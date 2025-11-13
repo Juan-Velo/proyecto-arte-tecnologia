@@ -329,23 +329,36 @@ def analyze():
     """
     Analiza la foto capturada y genera una visualización de energía usando los datos del formulario.
     """
+    print(f"[DEBUG] analyze() called - Method: {request.method}")
+    print(f"[DEBUG] Content-Type: {request.content_type}")
+    print(f"[DEBUG] Has JSON: {request.is_json}")
+    
     try:
         datos = request.json
-        photo_data = datos.get('photo', '')
-        respuestas = datos.get('respuestas', {})
+        print(f"[DEBUG] Got datos: {bool(datos)}")
+        
+        photo_data = datos.get('photo', '') if datos else ''
+        respuestas = datos.get('respuestas', {}) if datos else {}
+        
+        print(f"[DEBUG] Photo data length: {len(photo_data) if photo_data else 0}")
+        print(f"[DEBUG] Respuestas keys: {list(respuestas.keys()) if respuestas else []}")
         
         if not photo_data or not photo_data.startswith('data:image'):
+            print("[DEBUG] Invalid photo data")
             return jsonify({'success': False, 'error': 'No se proporcionó una imagen válida'}), 400
         
         if not respuestas:
+            print("[DEBUG] No respuestas provided")
             return jsonify({'success': False, 'error': 'No se proporcionaron respuestas del formulario'}), 400
         
         # Calcular el porcentaje de agotamiento usando las respuestas del formulario
         porcentaje_agotamiento = calcular_agotamiento(respuestas)
         porcentaje_energia = 100 - porcentaje_agotamiento
+        print(f"[DEBUG] Calculated energy: {porcentaje_energia}%")
         
         # Procesar la imagen
         imagen_procesada = procesar_imagen_con_agotamiento(photo_data, porcentaje_agotamiento)
+        print("[DEBUG] Image processed successfully")
         
         # Extraer solo el base64 sin el prefijo data:image
         if imagen_procesada.startswith('data:image/png;base64,'):
