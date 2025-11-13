@@ -7,7 +7,7 @@ provider:
   memorySize: 1024
   timeout: 20
   iam:
-    role: arn:aws:iam::902206004539:role/LabRole
+    role: arn:aws:iam::293892040074:role/LabRole
   stage: prod
   region: us-east-1
   environment:
