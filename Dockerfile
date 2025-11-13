@@ -1,6 +1,8 @@
 FROM public.ecr.aws/lambda/python:3.12
 
 ARG LAMBDA_TASK_ROOT=/var/task
+ENV LAMBDA_TASK_ROOT=${LAMBDA_TASK_ROOT}
+ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
 WORKDIR ${LAMBDA_TASK_ROOT}
 
 # Install Python dependencies into the Lambda task root
