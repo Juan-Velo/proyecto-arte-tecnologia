@@ -1,4 +1,7 @@
-from serverless_wsgi import handle
+try:
+    from serverless_wsgi import handle_request as handle
+except ImportError:
+    from serverless_wsgi import handle
 
 from app import app
 
