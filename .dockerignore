@@ -1,0 +1,8 @@
+.git
+.serverless
+.venv
+__pycache__/
+node_modules/
+Dockerfile
+README.md
+*.pyc

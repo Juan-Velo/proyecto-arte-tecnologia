@@ -12,10 +12,16 @@ provider:
   region: us-east-1
   environment:
     FLASK_ENV: production
+  ecr:
+    images:
+      appimage:
+        path: .
+        file: Dockerfile
 
 functions:
   app:
-    handler: wsgi_handler.handler
+    image:
+      name: appimage
     events:
       - http:
           path: /
@@ -25,23 +31,6 @@ functions:
           path: '{proxy+}'
           method: ANY
           cors: true
-
-plugins:
-  - serverless-wsgi
-
-custom:
-  wsgi:
-    app: app.app
-  pythonRequirements:
-    dockerizePip: non-linux
-    zip: true
-    slim: true
-    slimPatterns:
-      - "**/*.tests"
-      - "**/tests"
-      - "**/*.dist-info"
-    strip: true
-    layer: false
 
 package:
   patterns:
