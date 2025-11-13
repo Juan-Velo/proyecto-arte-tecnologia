@@ -6,6 +6,7 @@ provider:
   runtime: python3.12
   memorySize: 1024
   timeout: 29
+  architecture: x86_64
   iam:
     role: arn:aws:iam::293892040074:role/LabRole
   stage: prod
@@ -17,6 +18,7 @@ provider:
       appimage:
         path: .
         file: Dockerfile
+        platform: linux/amd64
 
 functions:
   app:

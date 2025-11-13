@@ -17,6 +17,7 @@ git clone git@github.com:Juan-Velo/proyecto-arte-tecnologia.git
 cd proyecto-arte-tecnologia
 
 # Desplegar con Serverless (requiere Docker en ejecución)
+export DOCKER_BUILDKIT=0   # garantiza un manifiesto compatible con Lambda
 sls deploy
 ```
 
