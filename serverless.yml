@@ -5,13 +5,15 @@ provider:
   name: aws
   runtime: python3.12
   memorySize: 1024
-  timeout: 20
+  timeout: 30
   iam:
     role: arn:aws:iam::293892040074:role/LabRole
   stage: prod
   region: us-east-1
   environment:
     FLASK_ENV: production
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
 
 functions:
   app:
@@ -28,11 +30,17 @@ functions:
 
 plugins:
   - serverless-wsgi
+  - serverless-python-requirements
 
 custom:
   wsgi:
     app: app.app
-    packRequirements: false
+  pythonRequirements:
+    dockerizePip: non-linux
+    zip: true
+    slim: true
+    strip: false
+    layer: true
 
 package:
   patterns:
