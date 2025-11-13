@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflejo Energético</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-bolt"></i> Reflejo Energético</h1>
+            <p class="subtitle">Visualiza tu nivel de energía vital</p>
+        </header>
+
+        <!-- Formulario de evaluación -->
+        <div class="form-section">
+            <h2><i class="fas fa-clipboard-list"></i> Evaluación de Energía</h2>
+            <form id="energyForm">
+                <div class="question-group">
+                    <label for="horas_trabajo"><i class="fas fa-briefcase"></i> ¿Cuántas horas trabajaste/estudiaste hoy?</label>
+                    <select name="horas_trabajo" id="horas_trabajo" required>
+                        <option value="">Selecciona una opción</option>
+                        <option value="0-2">0-2 horas</option>
+                        <option value="3-4">3-4 horas</option>
+                        <option value="5-6">5-6 horas</option>
+                        <option value="7-8">7-8 horas</option>
+                        <option value="9+">9+ horas</option>
+                    </select>
+                </div>
+
+                <div class="question-group">
+                    <label for="ejercicio"><i class="fas fa-running"></i> ¿Qué nivel de ejercicio realizaste hoy?</label>
+                    <select name="ejercicio" id="ejercicio" required>
+                        <option value="">Selecciona una opción</option>
+                        <option value="ninguno">Ninguno</option>
+                        <option value="ligero">Ligero (caminar, estiramientos)</option>
+                        <option value="moderado">Moderado (trotar, yoga)</option>
+                        <option value="intenso">Intenso (gym, deportes)</option>
+                    </select>
+                </div>
+
+                <div class="question-group">
+                    <label for="horas_sueno"><i class="fas fa-bed"></i> ¿Cuántas horas dormiste anoche?</label>
+                    <select name="horas_sueno" id="horas_sueno" required>
+                        <option value="">Selecciona una opción</option>
+                        <option value="0-3">0-3 horas</option>
+                        <option value="4-5">4-5 horas</option>
+                        <option value="6-7">6-7 horas</option>
+                        <option value="8+">8+ horas</option>
+                    </select>
+                </div>
+
+                <div class="question-group">
+                    <label for="estres"><i class="fas fa-brain"></i> ¿Cómo calificarías tu nivel de estrés hoy?</label>
+                    <select name="estres" id="estres" required>
+                        <option value="">Selecciona una opción</option>
+                        <option value="bajo">Bajo</option>
+                        <option value="medio">Medio</option>
+                        <option value="alto">Alto</option>
+                        <option value="muy_alto">Muy alto</option>
+                    </select>
+                </div>
+
+                <div class="question-group">
+                    <label for="tiempo_pantalla"><i class="fas fa-mobile-alt"></i> ¿Cuánto tiempo frente a pantallas hoy?</label>
+                    <select name="tiempo_pantalla" id="tiempo_pantalla" required>
+                        <option value="">Selecciona una opción</option>
+                        <option value="0-2">0-2 horas</option>
+                        <option value="3-5">3-5 horas</option>
+                        <option value="6-8">6-8 horas</option>
+                        <option value="9+">9+ horas</option>
+                    </select>
+                </div>
+
+                <div class="question-group">
+                    <label for="comidas"><i class="fas fa-utensils"></i> ¿Cuántas comidas completas tuviste hoy?</label>
+                    <select name="comidas" id="comidas" required>
+                        <option value="">Selecciona una opción</option>
+                        <option value="0-1">0-1 comidas</option>
+                        <option value="2">2 comidas</option>
+                        <option value="3">3 comidas</option>
+                        <option value="4+">4+ comidas</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sección de cámara -->
+        <div class="camera-section">
+            <h3><i class="fas fa-camera"></i> Captura tu Reflejo</h3>
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="camera-buttons">
+                <button type="button" id="btnCapturar" class="btn-camera" onclick="capturePhoto()">
+                    <i class="fas fa-camera"></i> Capturar Foto
+                </button>
+                <button type="button" id="btnRetomar" class="btn-camera btn-secondary hidden" onclick="retakePhoto()">
+                    <i class="fas fa-redo"></i> Volver a Tomar Foto
+                </button>
+                <button type="button" id="btnAnalizar" class="btn-camera btn-primary hidden" onclick="analyzeEnergy()">
+                    <i class="fas fa-bolt"></i> Analizar Mi Energía
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stream = null;
+        let photoData = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            startCamera();
+        });
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' },
+                    audio: false 
+                });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('canvas').style.display = 'none';
+            } catch (err) {
+                console.error('Error al acceder a la cámara:', err);
+                alert('No se pudo acceder a la cámara. Por favor, verifica los permisos.');
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            photoData = canvas.toDataURL('image/png');
+
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+
+            document.getElementById('btnCapturar').classList.add('hidden');
+            document.getElementById('btnRetomar').classList.remove('hidden');
+            document.getElementById('btnAnalizar').classList.remove('hidden');
+        }
+
+        function retakePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+
+            video.style.display = 'block';
+            canvas.style.display = 'none';
+
+            document.getElementById('btnCapturar').classList.remove('hidden');
+            document.getElementById('btnRetomar').classList.add('hidden');
+            document.getElementById('btnAnalizar').classList.add('hidden');
+
+            photoData = null;
+        }
+
+        async function analyzeEnergy() {
+            // Validar que la foto esté capturada
+            if (!photoData) {
+                alert('Por favor, captura una foto primero.');
+                return;
+            }
+
+            // Validar que el formulario esté completo
+            const form = document.getElementById('energyForm');
+            if (!form.checkValidity()) {
+                alert('Por favor, completa todas las preguntas del formulario antes de continuar.');
+                form.reportValidity();
+                return;
+            }
+
+            // Recolectar datos del formulario
+            const formData = new FormData(form);
+            const respuestas = {};
+            for (let [key, value] of formData.entries()) {
+                respuestas[key] = value;
+            }
+
+            const btnAnalizar = document.getElementById('btnAnalizar');
+            btnAnalizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            btnAnalizar.disabled = true;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        photo: photoData,
+                        respuestas: respuestas
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar datos en sessionStorage para la página de resultados
+                    sessionStorage.setItem('energyResult', JSON.stringify(data));
+                    
+                    // Redirigir a la página de resultados
+                    window.location.href = '/resultado';
+                } else {
+                    alert('Error al procesar: ' + (data.error || 'Error desconocido'));
+                    btnAnalizar.innerHTML = '<i class="fas fa-bolt"></i> Analizar Mi Energía';
+                    btnAnalizar.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al comunicarse con el servidor.');
+                btnAnalizar.innerHTML = '<i class="fas fa-bolt"></i> Analizar Mi Energía';
+                btnAnalizar.disabled = false;
+            }
+        }
+
+        // Limpiar stream al cerrar
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>

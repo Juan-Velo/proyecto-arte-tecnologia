@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Reflejo Energético - Resultado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-bolt"></i> Tu Reflejo Energético</h1>
+            <p class="subtitle">Procesando tu energía vital...</p>
+        </header>
+
+        <div id="loading" class="loading-section">
+            <div class="spinner"></div>
+            <p>Analizando tu energía...</p>
+        </div>
+
+        <div id="resultado" class="resultado hidden">
+            <h2>Tu Reflejo Energético</h2>
+            <p id="mensaje" class="mensaje-reflexivo"></p>
+            
+            <div class="result-content">
+                <div class="result-display">
+                    <div class="image-container">
+                        <img id="resultImage" src="" alt="Tu energía visualizada">
+                    </div>
+                    
+                    <div class="energy-bar-vertical-wrapper">
+                        <div class="energy-bar-vertical">
+                            <div id="energyBar" class="energy-fill" style="height: 0%;">
+                            </div>
+                        </div>
+                        <span id="energyPercent" class="energy-percent-label">0%</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-download" onclick="downloadImage()">
+                        <i class="fas fa-download"></i> Guardar Imagen
+                    </button>
+                    <button class="btn-share" onclick="openShareModal()">
+                        <i class="fas fa-share-alt"></i> Compartir
+                    </button>
+                </div>
+
+                <div class="new-analysis">
+                    <a href="/" class="btn-new-reflection">
+                        <i class="fas fa-redo"></i> Nuevo Análisis
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de compartir -->
+        <div id="shareModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-share-alt"></i> Compartir mi Reflejo Energético</h3>
+                    <button class="close-modal" onclick="closeShareModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="share-description">Comparte tu nivel de energía con tus amigos:</p>
+                    <div class="share-options">
+                        <button class="share-option whatsapp" onclick="shareToWhatsApp()">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </button>
+                        <button class="share-option facebook" onclick="shareToFacebook()">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook</span>
+                        </button>
+                        <button class="share-option instagram" onclick="shareToInstagram()">
+                            <i class="fab fa-instagram"></i>
+                            <span>Instagram</span>
+                        </button>
+                        <button class="share-option gmail" onclick="shareToGmail()">
+                            <i class="fas fa-envelope"></i>
+                            <span>Gmail</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Obtener datos del sessionStorage
+            const resultData = sessionStorage.getItem('energyResult');
+            
+            if (!resultData) {
+                alert('No hay datos de análisis. Redirigiendo al inicio...');
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const data = JSON.parse(resultData);
+                
+                // Simular un pequeño delay para el efecto de carga
+                setTimeout(() => {
+                    displayResults(data);
+                }, 1000);
+            } catch (error) {
+                console.error('Error al cargar resultados:', error);
+                alert('Error al cargar los resultados. Redirigiendo al inicio...');
+                window.location.href = '/';
+            }
+        });
+
+        function displayResults(data) {
+            // Ocultar loading
+            document.getElementById('loading').classList.add('hidden');
+            
+            // Mostrar resultados
+            const resultado = document.getElementById('resultado');
+            resultado.classList.remove('hidden');
+            
+            // Redondear el porcentaje (sin decimales)
+            const energyPercentage = Math.round(data.energy_percentage);
+            
+            // Actualizar imagen
+            const img = document.getElementById('resultImage');
+            img.src = 'data:image/png;base64,' + data.image_data;
+            
+            // Esperar a que la imagen cargue para ajustar la barra
+            img.onload = function() {
+                // Animar la barra de energía
+                setTimeout(() => {
+                    const energyBar = document.getElementById('energyBar');
+                    const energyWrapper = document.querySelector('.energy-bar-vertical-wrapper');
+                    const imageContainer = document.querySelector('.image-container');
+                    
+                    // Ajustar la altura de la barra a la altura de la imagen
+                    if (energyWrapper && imageContainer) {
+                        const imgHeight = imageContainer.offsetHeight;
+                        
+                        // En desktop, la barra vertical debe tener la altura de la imagen
+                        if (window.innerWidth > 768) {
+                            const barContainer = document.querySelector('.energy-bar-vertical');
+                            if (barContainer) {
+                                barContainer.style.height = imgHeight + 'px';
+                            }
+                        }
+                    }
+                    
+                    // Animar el fill de la barra
+                    // En móvil usa width, en desktop usa height
+                    if (window.innerWidth <= 768) {
+                        energyBar.style.width = energyPercentage + '%';
+                        energyBar.style.height = '100%';
+                    } else {
+                        energyBar.style.height = energyPercentage + '%';
+                        energyBar.style.width = '100%';
+                    }
+                    
+                    document.getElementById('energyPercent').textContent = energyPercentage + '%';
+                }, 300);
+            };
+            
+            // Mostrar mensaje reflexivo
+            if (data.message) {
+                document.getElementById('mensaje').textContent = data.message;
+            }
+            
+            // Re-ajustar al cambiar tamaño de ventana
+            window.addEventListener('resize', function() {
+                const energyBar = document.getElementById('energyBar');
+                const energyPercentText = document.getElementById('energyPercent').textContent;
+                const percentage = parseInt(energyPercentText);
+                
+                if (window.innerWidth <= 768) {
+                    energyBar.style.width = percentage + '%';
+                    energyBar.style.height = '100%';
+                } else {
+                    energyBar.style.height = percentage + '%';
+                    energyBar.style.width = '100%';
+                    
+                    const imageContainer = document.querySelector('.image-container');
+                    const barContainer = document.querySelector('.energy-bar-vertical');
+                    if (imageContainer && barContainer) {
+                        barContainer.style.height = imageContainer.offsetHeight + 'px';
+                    }
+                }
+            });
+        }
+
+        function downloadImage() {
+            const img = document.getElementById('resultImage').src;
+            const link = document.createElement('a');
+            link.href = img;
+            link.download = 'mi_reflejo_energetico_' + Date.now() + '.png';
+            link.click();
+        }
+
+        function openShareModal() {
+            document.getElementById('shareModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar modal al hacer click fuera
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('shareModal');
+            if (event.target === modal) {
+                closeShareModal();
+            }
+        });
+
+        async function shareToWhatsApp() {
+            const energyPercent = document.getElementById('energyPercent').textContent;
+            const imageData = document.getElementById('resultImage').src;
+            
+            try {
+                // Convertir base64 a blob
+                const blob = await fetch(imageData).then(r => r.blob());
+                const file = new File([blob], 'mi_reflejo_energetico.png', { type: 'image/png' });
+                
+                const text = `¡Mira mi Reflejo Energético! 💚⚡\n\nTengo ${energyPercent} de energía restante.\n\nDescubre la tuya en: ${window.location.origin}`;
+                
+                // Si soporta Web Share API con archivos
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Mi Reflejo Energético',
+                        text: text
+                    });
+                } else {
+                    // Fallback: Descargar imagen y abrir WhatsApp con texto
+                    downloadImage();
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                    window.open(whatsappUrl, '_blank');
+                    alert('La imagen se ha descargado. Por favor, adjúntala manualmente en WhatsApp.');
+                }
+                closeShareModal();
+            } catch (error) {
+                console.error('Error al compartir:', error);
+                // Fallback
+                const energyPercent = document.getElementById('energyPercent').textContent;
+                const text = `¡Mira mi Reflejo Energético! 💚⚡\n\nTengo ${energyPercent} de energía restante.\n\nDescubre la tuya en: ${window.location.origin}`;
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                window.open(whatsappUrl, '_blank');
+                alert('Por favor, descarga la imagen y adjúntala manualmente.');
+            }
+        }
+
+        async function shareToFacebook() {
+            const energyPercent = document.getElementById('energyPercent').textContent;
+            const imageData = document.getElementById('resultImage').src;
+            
+            try {
+                const blob = await fetch(imageData).then(r => r.blob());
+                const file = new File([blob], 'mi_reflejo_energetico.png', { type: 'image/png' });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Mi Reflejo Energético',
+                        text: `¡Tengo ${energyPercent} de energía restante! ⚡`
+                    });
+                } else {
+                    // Fallback: Abrir Facebook
+                    downloadImage();
+                    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+                    window.open(facebookUrl, '_blank');
+                    alert('La imagen se ha descargado. Por favor, adjúntala en tu publicación de Facebook.');
+                }
+                closeShareModal();
+            } catch (error) {
+                console.error('Error:', error);
+                downloadImage();
+                alert('La imagen se ha descargado. Por favor, compártela manualmente en Facebook.');
+            }
+        }
+
+        async function shareToInstagram() {
+            const imageData = document.getElementById('resultImage').src;
+            
+            try {
+                const blob = await fetch(imageData).then(r => r.blob());
+                const file = new File([blob], 'mi_reflejo_energetico.png', { type: 'image/png' });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Mi Reflejo Energético'
+                    });
+                } else {
+                    // Instagram no tiene API de compartir directa, descargar imagen
+                    downloadImage();
+                    alert('La imagen se ha descargado. Ábrela desde la galería de Instagram para compartirla.');
+                }
+                closeShareModal();
+            } catch (error) {
+                console.error('Error:', error);
+                downloadImage();
+                alert('La imagen se ha descargado. Puedes subirla a Instagram desde tu galería.');
+            }
+        }
+
+        async function shareToGmail() {
+            const energyPercent = document.getElementById('energyPercent').textContent;
+            const imageData = document.getElementById('resultImage').src;
+            
+            try {
+                const blob = await fetch(imageData).then(r => r.blob());
+                const file = new File([blob], 'mi_reflejo_energetico.png', { type: 'image/png' });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Mi Reflejo Energético',
+                        text: `¡Mira mi Reflejo Energético! Tengo ${energyPercent} de energía restante.`
+                    });
+                } else {
+                    // Fallback: Abrir Gmail con el texto
+                    const subject = 'Mi Reflejo Energético ⚡';
+                    const body = `¡Hola!\n\nQuiero compartir contigo mi Reflejo Energético.\n\nActualmente tengo ${energyPercent} de energía restante.\n\nDescubre la tuya en: ${window.location.origin}\n\n(Adjunto mi imagen de resultado)`;
+                    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    
+                    downloadImage();
+                    window.open(gmailUrl, '_blank');
+                    alert('La imagen se ha descargado. Por favor, adjúntala en el correo de Gmail.');
+                }
+                closeShareModal();
+            } catch (error) {
+                console.error('Error:', error);
+                downloadImage();
+                alert('La imagen se ha descargado. Por favor, adjúntala manualmente en Gmail.');
+            }
+        }
+    </script>
+</body>
+</html>
